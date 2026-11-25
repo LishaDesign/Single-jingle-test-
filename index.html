@@ -874,28 +874,20 @@ function isOpen(i){return i<=dayNum()}
 var tT=document.createElement('div');tT.style.cssText='position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:90vw;padding:10px 16px;border-radius:18px;background:rgba(5,10,30,.85);border:1px solid rgba(255,217,120,.5);color:#fff;font:600 14px/1.3 "Avenir Next","Helvetica Neue",Arial,sans-serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .3s';document.body.appendChild(tT);
 var tTm=0;function toast(m,ms){tT.textContent=m;tT.style.opacity=1;clearTimeout(tTm);tTm=setTimeout(function(){tT.style.opacity=0},ms||3200)}
 function nudge(i){var d=new Date(dayStart().getTime());d.setDate(d.getDate()+i-1);toast('\uD83D\uDD12 Door '+i+' opens on '+d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))}
-function applyLocks(){for(var q=1;q<=24;q++){var g=$('h'+q);if(g)g.style.opacity=isOpen(q)?'':'.45'}}
+function applyLocks(){}
 applyLocks();
 /* ===== 8:15am reminder with jingle bells (works while this page is open) ===== */
 TUNES.alarm={u:.36,n:[[64,1],[64,1],[64,2],[64,1],[64,1],[64,2],[64,1],[67,1],[60,1.5],[62,.5],[64,4],[65,1],[65,1],[65,1.5],[65,.5],[65,1],[64,1],[64,1],[64,.5],[64,.5],[64,1],[62,1],[62,1],[64,1],[62,2],[67,2],[64,1],[64,1],[64,2],[64,1],[64,1],[64,2],[64,1],[67,1],[60,1.5],[62,.5],[64,4],[65,1],[65,1],[65,1.5],[65,.5],[65,1],[64,1],[64,1],[64,.5],[64,.5],[67,1],[67,1],[65,1],[62,1],[60,4]]};
 var RK='advRem815';
-function remOn(){try{return localStorage.getItem(RK)==='1'}catch(e){return window.__rem===1}}
-function remSet(v){window.__rem=v?1:0;try{localStorage.setItem(RK,v?'1':'0')}catch(e){}}
 function dKey(){var n=new Date();return n.getFullYear()+'-'+(n.getMonth()+1)+'-'+n.getDate()}
-function jingle(){try{unlockAudio();musicStop(true);liveStart('alarm')}catch(e){}}
-var bt=document.createElement('div');bt.style.cssText='position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:30;width:44px;height:44px;border-radius:50%;background:rgba(5,10,30,.75);border:1px solid rgba(255,217,120,.55);font-size:21px;line-height:44px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent';document.body.appendChild(bt);
-function paintBell(){bt.textContent=remOn()?'\uD83D\uDD14':'\uD83D\uDD15';bt.style.opacity=remOn()?1:.7}
-bt.addEventListener('click',function(e){e.stopPropagation();var on=!remOn();remSet(on);paintBell();
-  if(on){try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(x){}jingle();toast('\uD83D\uDD14 Reminder on: jingle bells every morning at 8:15 (keep this page open)',4500)}
-  else{musicStop(false);toast('Reminder off')}});
-paintBell();
-function checkRem(){applyLocks();if(!remOn())return;var n=new Date(),m=n.getHours()*60+n.getMinutes(),dn=dayNum();
-  if(dn<1||dn>24||m<495||m>=540)return;
+var loadK=dKey(),loadM=(function(){var n=new Date();return n.getHours()*60+n.getMinutes()})();
+document.addEventListener('pointerdown',function(){try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(e){}},{once:true});
+function checkRem(){var n=new Date(),m=n.getHours()*60+n.getMinutes(),dn=dayNum(),wd=n.getDay(),late=(wd===0||wd===6||(n.getMonth()===11&&n.getDate()===24)),t0=late?525:455;
+  if(dn<1||dn>24||m<t0||m>=t0+5||(loadK===dKey()&&loadM>=t0))return;
   var fk;try{fk=localStorage.getItem(RK+'d')}catch(e){fk=window.__remd}if(fk===dKey())return;
   try{localStorage.setItem(RK+'d',dKey())}catch(e){}window.__remd=dKey();
-  try{if(window.Notification&&Notification.permission==='granted')new Notification('\uD83C\uDF84 Door '+dn+' is ready!',{body:'Open today\u2019s house in your Christmas village.'})}catch(e){}
-  jingle();toast('\uD83D\uDD14 Good morning! Door '+dn+' is ready',12000)}
-setInterval(checkRem,15000);setTimeout(checkRem,2000);
+  try{if(window.Notification&&Notification.permission==='granted')new Notification('\uD83C\uDF84 Door '+dn+' is ready!',{body:'Open today\u2019s house in your Christmas village.'})}catch(e){}}
+setInterval(checkRem,15000);
 
 window.__dw={start:startHouse,seq:function(i,D,T){if(!S0||S0.i!==i)openFor(i,D);seqT(T)},DW:DW,reset:resetOverlay};
 
