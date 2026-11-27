@@ -868,7 +868,7 @@ function refreshDots(hide){for(var q=1;q<=24;q++){var d=DOTS[q];if(d)d.setAttrib
 
 /* ===== date lock: only today's door and earlier doors open; future doors stay locked ===== */
 var START_MODE='today';
-function dayStart(){if(START_MODE==='today')return new Date(2026,10,24);var n=new Date(),y=n.getMonth()>=10?n.getFullYear():n.getFullYear()-1;return new Date(y,11,1)}
+function dayStart(){if(START_MODE==='today')return new Date(2026,10,27);var n=new Date(),y=n.getMonth()>=10?n.getFullYear():n.getFullYear()-1;return new Date(y,11,1)}
 function dayNum(){var n=new Date(),a=new Date(n.getFullYear(),n.getMonth(),n.getDate());return Math.round((a-dayStart())/86400000)+1}
 function isOpen(i){return i<=dayNum()}
 var tT=document.createElement('div');tT.style.cssText='position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;max-width:90vw;padding:10px 16px;border-radius:18px;background:rgba(5,10,30,.85);border:1px solid rgba(255,217,120,.5);color:#fff;font:600 14px/1.3 "Avenir Next","Helvetica Neue",Arial,sans-serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .3s';document.body.appendChild(tT);
@@ -888,6 +888,18 @@ function checkRem(){var n=new Date(),m=n.getHours()*60+n.getMinutes(),dn=dayNum(
   try{localStorage.setItem(RK+'d',dKey())}catch(e){}window.__remd=dKey();
   try{if(window.Notification&&Notification.permission==='granted')new Notification('\uD83C\uDF84 Door '+dn+' is ready!',{body:'Open today\u2019s house in your Christmas village.'})}catch(e){}}
 setInterval(checkRem,15000);
+
+/* ===== stop all music when the app is closed, backgrounded or the screen locks ===== */
+function hardStopAudio(){
+  try{if(SRC){try{SRC.stop()}catch(e){}}}catch(e){}
+  try{if(MG){try{MG.gain.cancelScheduledValues(0);MG.gain.value=0}catch(e){}try{MG.disconnect()}catch(e){}}}catch(e){}
+  try{musicStop(true)}catch(e){}
+  try{if(MA){MA.pause();MA.volume=1;MA.__u=0}}catch(e){}
+  try{if(AC&&AC.state==='running'&&AC.suspend)AC.suspend()}catch(e){}
+}
+document.addEventListener('visibilitychange',function(){if(document.hidden)hardStopAudio()});
+window.addEventListener('pagehide',hardStopAudio);
+document.addEventListener('freeze',hardStopAudio);
 
 window.__dw={start:startHouse,seq:function(i,D,T){if(!S0||S0.i!==i)openFor(i,D);seqT(T)},DW:DW,reset:resetOverlay};
 
